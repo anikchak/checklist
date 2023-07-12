@@ -32,6 +32,7 @@ jobs:
 
           # Print the checklist variable
           echo "Checklist Content: $checklist"
+          echo "Changed files: $changed_files"
 
           if [[ "$changed_files" == *"$checklist_file"* && ! $(echo "$checklist" | grep -i "\[x\]") ]]; then
             echo "::error file=${checklist_file},line=1::Checklist not completed!"
