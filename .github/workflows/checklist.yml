@@ -18,7 +18,10 @@ jobs:
 
       - name: Fetch latest changes
         run: git fetch origin ${{ github.event.pull_request.head.ref }}
-      
+
+      - name: Reset to latest changes
+        run: git reset --hard origin/${{ github.event.pull_request.head.ref }}
+
       - name: Check if checklist is complete
         run: |
           checklist_file="./.github/PULL_REQUEST_TEMPLATE.md"
@@ -29,8 +32,7 @@ jobs:
 
           # Print the checklist variable
           echo "Checklist Content: $checklist"
-          echo "Checklist files: $changed_files"
-
+          echo "Changed files: $changed_files"
 
           if [[ "$changed_files" == *"$checklist_file"* && ! $(echo "$checklist" | grep -i "\[x\]") ]]; then
             echo "::error file=${checklist_file},line=1::Checklist not completed!"
