@@ -16,25 +16,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Fetch latest changes
-        run: git fetch origin ${{ github.event.pull_request.head.ref }}
-
-      - name: Reset to latest changes
-        run: git reset --hard origin/${{ github.event.pull_request.head.ref }}
-
       - name: Check if checklist is complete
         run: |
-          checklist_file="./.github/PULL_REQUEST_TEMPLATE.md"
-          checklist=$(cat $checklist_file)
+          checklist_file="PULL_REQUEST_TEMPLATE.md"
           pr_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
 
-          changed_files=$(git diff --name-only HEAD..FETCH_HEAD)
+          pr_body=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/${{ github.repository }}/pulls/$pr_number" | jq -r .body)
 
-          # Print the checklist variable
-          echo "Checklist Content: $checklist"
-          echo "Changed files: $changed_files"
-
-          if [[ "$changed_files" == *"$checklist_file"* && ! $(echo "$checklist" | grep -i "\[x\]") ]]; then
+          echo "pr_number $pr_number"
+          echo "pr_body $pr_body"
+          
+          if [[ ! "$pr_body" =~ \[x\] ]]; then
             echo "::error file=${checklist_file},line=1::Checklist not completed!"
             exit 1
           fi
